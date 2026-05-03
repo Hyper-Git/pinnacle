@@ -11,7 +11,7 @@ data "aws_ami" "al2023" {
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["al2023-ami-2023*-x86_64"]
   }
 
   filter {
@@ -213,7 +213,7 @@ resource "aws_autoscaling_group" "main" {
 
   launch_template {
     id      = aws_launch_template.main.id
-    version = "$Latest"
+    version = aws_launch_template.main.latest_version
   }
 
   instance_refresh {

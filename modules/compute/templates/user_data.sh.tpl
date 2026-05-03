@@ -3,9 +3,11 @@ set -euo pipefail
 
 mkdir -p /etc/app
 
-# System updates + Python packages
+# System updates + Python packages + SSM agent (explicit install covers minimal AMIs)
 dnf update -y
-dnf install -y python3-pip
+dnf install -y python3-pip amazon-ssm-agent
+
+systemctl enable --now amazon-ssm-agent
 
 pip3 install flask gunicorn psycopg2-binary python-dotenv
 

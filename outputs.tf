@@ -108,3 +108,15 @@ output "deployment_bucket_name" {
   description = "S3 deployment bucket name"
   value       = module.compute.deployment_bucket_name
 }
+
+# ── Phase 5: Monitoring ───────────────────────────────────────────────────────
+
+output "sns_topic_arn" {
+  description = "SNS topic ARN for CloudWatch alarm notifications"
+  value       = module.monitoring.sns_topic_arn
+}
+
+output "dashboard_name" {
+  description = "CloudWatch dashboard name"
+  value       = module.monitoring.dashboard_name
+}

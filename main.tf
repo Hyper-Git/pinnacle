@@ -52,3 +52,17 @@ module "compute" {
 
   db_secret_arn = module.database.db_secret_arn
 }
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  project     = var.project
+  environment = var.environment
+  alert_email = var.alert_email
+
+  asg_name                = module.compute.asg_name
+  alb_arn_suffix          = module.compute.alb_arn_suffix
+  target_group_arn_suffix = module.compute.target_group_arn_suffix
+
+  db_identifier = module.database.db_identifier
+}
