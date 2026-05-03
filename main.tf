@@ -1,3 +1,11 @@
+module "dns" {
+  source      = "./modules/dns"
+  project     = var.project
+  environment = var.environment
+  domain_name = var.domain_name
+  subdomain   = var.subdomain
+}
+
 module "networking" {
   source      = "./modules/networking"
   project     = var.project

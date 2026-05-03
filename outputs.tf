@@ -1,3 +1,20 @@
+# ── DNS + TLS (prerequisite for compute) ─────────────────────────────────────
+
+output "certificate_arn" {
+  description = "ARN of the validated ACM certificate for the ALB HTTPS listener"
+  value       = module.dns.certificate_arn
+}
+
+output "hosted_zone_id" {
+  description = "Route 53 hosted zone ID for cornelcloud.net"
+  value       = module.dns.hosted_zone_id
+}
+
+output "fqdn" {
+  description = "Fully qualified domain name (pinnacle.cornelcloud.net)"
+  value       = module.dns.fqdn
+}
+
 # ── Phase 1: Networking ───────────────────────────────────────────────────────
 
 output "vpc_id" {

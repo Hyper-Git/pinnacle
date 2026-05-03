@@ -28,9 +28,16 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "certificate_arn" {
-  description = "ACM certificate ARN for the ALB HTTPS listener"
+variable "domain_name" {
+  description = "Root domain name of the existing Route 53 hosted zone (e.g. cornelcloud.net)"
   type        = string
+  default     = "cornelcloud.net"
+}
+
+variable "subdomain" {
+  description = "Subdomain to issue the ACM certificate for (e.g. pinnacle)"
+  type        = string
+  default     = "pinnacle"
 }
 
 variable "alert_email" {
