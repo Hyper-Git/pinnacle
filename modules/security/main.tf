@@ -139,15 +139,12 @@ resource "aws_iam_instance_profile" "ec2" {
 
 # ── OIDC Provider + IAM Role for GitHub Actions ───────────────────────────────
 
-resource "aws_iam_openid_connect_provider" "github" {
-  url            = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"]
+# The GitHub OIDC provider is account-scoped (one per URL), so we reference the
+# existing one rather than attempting to create it again.
+data "aws_caller_identity" "current" {}
 
-  # Two thumbprints cover GitHub's current and rotated certificate chains
-  thumbprint_list = [
-    "6938fd4d98bab03faadb97b34396831e3780aea1",
-    "1c58a3a8518e8759bf075b76b750d4f2df264fcd",
-  ]
+data "aws_iam_openid_connect_provider" "github" {
+  arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
 }
 
 data "aws_iam_policy_document" "github_actions_assume_role" {
@@ -155,7 +152,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
+      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
     }
     condition {
       test     = "StringEquals"

@@ -46,3 +46,21 @@ output "github_actions_role_arn" {
   description = "IAM role ARN for GitHub Actions OIDC"
   value       = module.security.github_actions_role_arn
 }
+
+# ── Phase 3: Database ─────────────────────────────────────────────────────────
+
+output "db_endpoint" {
+  description = "RDS instance endpoint (host:port)"
+  value       = module.database.db_endpoint
+  sensitive   = true
+}
+
+output "db_secret_arn" {
+  description = "ARN of the Secrets Manager secret containing DB credentials"
+  value       = module.database.db_secret_arn
+}
+
+output "db_identifier" {
+  description = "RDS instance identifier"
+  value       = module.database.db_identifier
+}
