@@ -81,3 +81,30 @@ output "db_identifier" {
   description = "RDS instance identifier"
   value       = module.database.db_identifier
 }
+
+# ── Phase 4: Compute ──────────────────────────────────────────────────────────
+
+output "alb_dns_name" {
+  description = "ALB DNS name — also reachable via pinnacle.cornelcloud.net"
+  value       = module.compute.alb_dns_name
+}
+
+output "alb_arn_suffix" {
+  description = "ALB ARN suffix for CloudWatch metric dimensions"
+  value       = module.compute.alb_arn_suffix
+}
+
+output "target_group_arn_suffix" {
+  description = "Target group ARN suffix for CloudWatch metric dimensions"
+  value       = module.compute.target_group_arn_suffix
+}
+
+output "asg_name" {
+  description = "Auto Scaling Group name for CI/CD instance refresh"
+  value       = module.compute.asg_name
+}
+
+output "deployment_bucket_name" {
+  description = "S3 deployment bucket name"
+  value       = module.compute.deployment_bucket_name
+}

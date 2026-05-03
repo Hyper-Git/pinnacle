@@ -58,9 +58,9 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [var.rds_security_group_id]
   publicly_accessible    = false
 
-  backup_retention_period = 7
-  backup_window           = "03:00-04:00"
-  maintenance_window      = "Mon:04:00-Mon:05:00"
+  backup_retention_period    = 7
+  backup_window              = "03:00-04:00"
+  maintenance_window         = "Mon:04:00-Mon:05:00"
   auto_minor_version_upgrade = true
 
   performance_insights_enabled          = true
