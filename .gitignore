@@ -1,0 +1,16 @@
+# Terraform state
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Sensitive variable files
+terraform.tfvars
+*.auto.tfvars
+
+# SSH / TLS keys
+*.pem
+*.key
+
+# OS artefacts
+.DS_Store
+Thumbs.db
