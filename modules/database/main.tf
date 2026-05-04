@@ -83,13 +83,18 @@ resource "aws_db_instance" "main" {
   }
 }
 
-# ── Secrets Manager ───────────────────────────────────────────────────────────
+# ── Secrets Manager ──────────────────────────────────────────────────────────
+
+resource "random_id" "secret_suffix" {
+  byte_length = 4
+}
 
 resource "aws_secretsmanager_secret" "db" {
-  name                    = "${var.project}/${var.environment}/db-password"
+  name                    = "${var.project}/${var.environment}/db-password-${random_id.secret_suffix.hex}"
   description             = "Database credentials for ${local.name_prefix} PostgreSQL"
   recovery_window_in_days = 0 # Set to 0 for easier re-runs during development
 }
+
 
 resource "aws_secretsmanager_secret_version" "db" {
   secret_id = aws_secretsmanager_secret.db.id
