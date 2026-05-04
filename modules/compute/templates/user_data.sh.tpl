@@ -12,8 +12,6 @@ dnf install -y python3-pip amazon-ssm-agent unzip
 systemctl enable --now amazon-ssm-agent
 pip3 install flask gunicorn psycopg2-binary python-dotenv
 
-# ... (omitting secret fetching for brevity in thought, but I must provide full replacement for the targeted section)
-
 # ── 3. Secret Fetching (Securely) ──────────────────────────────────────────────
 # Fetch DB credentials from Secrets Manager to a temporary file
 aws secretsmanager get-secret-value \
@@ -50,9 +48,23 @@ chown -R appuser:appuser /etc/app
 chmod 600 /etc/app/.env
 
 # ── 4. Download & Extract Application ─────────────────────────────────────────
-aws s3 cp s3://${deployment_bucket_name}/releases/app-latest.zip /tmp/app.zip
-unzip -o /tmp/app.zip -d /etc/app
-rm /tmp/app.zip
+# We try to download the artifact. If it's missing (first boot), we write a temporary bootstrap app.
+if aws s3 cp s3://${deployment_bucket_name}/releases/app-latest.zip /tmp/app.zip; then
+    unzip -o /tmp/app.zip -d /etc/app
+    rm /tmp/app.zip
+else
+    echo "Deployment artifact not found. Writing bootstrap app."
+    cat > /etc/app/app.py << 'PYEOF'
+import os
+from flask import Flask
+app = Flask(__name__)
+@app.route('/')
+def index(): return "Pinnacle Bootstrap - Waiting for first CI/CD push..."
+@app.route('/health')
+def health(): return {"status": "healthy"}
+if __name__ == '__main__': app.run(host='0.0.0.0', port=8080)
+PYEOF
+fi
 
 # ── 5. Systemd Service (Running as appuser) ───────────────────────────────────
 cat > /etc/systemd/system/pinnacle.service << 'SERVICE'

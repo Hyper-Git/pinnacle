@@ -119,8 +119,9 @@ data "aws_iam_policy_document" "ec2_custom" {
 
   statement {
     sid     = "S3DeploymentRead"
-    actions = ["s3:GetObject"]
+    actions = ["s3:GetObject", "s3:ListBucket"]
     resources = [
+      "arn:aws:s3:::${var.deployment_bucket_name}",
       "arn:aws:s3:::${var.deployment_bucket_name}/*"
     ]
   }
