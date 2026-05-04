@@ -1,0 +1,25 @@
+# Copy this file to terraform.tfvars and fill in your own values.
+# terraform.tfvars is gitignored and must never be committed.
+
+# ── Database credentials ───────────────────────────────────────────────────────
+# RDS master username — alphanumeric, no special characters
+db_username = "pinnacle_admin"
+
+# RDS master password — min 8 chars, avoid / @ " spaces
+db_password = "CHANGE_ME_use_a_strong_password"
+
+# ── DNS + TLS ──────────────────────────────────────────────────────────────────
+# Root domain of an existing Route 53 hosted zone you own
+domain_name = "example.com"
+
+# Subdomain to create — results in subdomain.domain_name (e.g. pinnacle.example.com)
+subdomain = "pinnacle"
+
+# ── Alerting ───────────────────────────────────────────────────────────────────
+# Email address that receives CloudWatch alarm notifications via SNS
+# You must confirm the subscription email AWS sends after first apply
+alert_email = "you@example.com"
+
+# ── CI/CD (Phase 6) ───────────────────────────────────────────────────────────
+# GitHub repository in owner/repo format — scopes the OIDC trust policy
+github_repo = "your-github-username/your-repo-name"
