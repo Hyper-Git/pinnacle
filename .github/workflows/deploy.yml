@@ -29,19 +29,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install flask gunicorn psycopg2-binary python-dotenv
+        run: pip install flask gunicorn psycopg2-binary python-dotenv
 
       - name: Verify all imports
-        run: |
-          python -c "
-          import flask, gunicorn, psycopg2, dotenv
-          print('flask    ', flask.__version__)
-          print('psycopg2 ', psycopg2.__version__)
-          print('dotenv   ', dotenv.__version__)
-          print('All dependencies OK')
-          "
+        run: python -c "import flask, gunicorn, psycopg2, dotenv; print('All imports OK')"
 
   # ── CD: package → S3 → instance refresh ───────────────────────────────────
   deploy:
