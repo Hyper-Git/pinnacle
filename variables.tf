@@ -46,3 +46,9 @@ variable "github_repo" {
   type        = string
   default     = "Hyper-Git/pinnacle"
 }
+
+variable "deployment_bucket_name" {
+  description = "S3 bucket name for deployment artifacts"
+  type        = string
+  default     = "pinnacle-deployments-cornelcloud"
+}

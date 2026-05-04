@@ -43,6 +43,9 @@ module "compute" {
   alb_security_group_id     = module.security.alb_security_group_id
   ec2_security_group_id     = module.security.ec2_security_group_id
   ec2_instance_profile_name = module.security.ec2_instance_profile_name
+  ec2_role_name             = module.security.ec2_role_name
+
+  deployment_bucket_name = var.deployment_bucket_name
 
   certificate_arn = module.dns.certificate_arn
   hosted_zone_id  = module.dns.hosted_zone_id

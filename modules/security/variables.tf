@@ -19,9 +19,3 @@ variable "app_port" {
   default     = 8080
 }
 
-variable "deployment_bucket_name" {
-  description = "S3 bucket name for deployment artifacts — grants EC2 instances read access"
-  type        = string
-  default     = "pinnacle-deployments"
-}
-

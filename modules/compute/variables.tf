@@ -38,6 +38,11 @@ variable "ec2_instance_profile_name" {
   type        = string
 }
 
+variable "ec2_role_name" {
+  description = "IAM role name to attach custom policies to"
+  type        = string
+}
+
 variable "certificate_arn" {
   description = "ACM certificate ARN for the ALB HTTPS listener"
   type        = string

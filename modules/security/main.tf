@@ -108,31 +108,6 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
-data "aws_iam_policy_document" "ec2_custom" {
-  statement {
-    sid     = "SecretsManagerRead"
-    actions = ["secretsmanager:GetSecretValue"]
-    resources = [
-      "arn:aws:secretsmanager:*:*:secret:${var.project}/${var.environment}/db-password-*"
-    ]
-  }
-
-  statement {
-    sid     = "S3DeploymentRead"
-    actions = ["s3:GetObject", "s3:ListBucket"]
-    resources = [
-      "arn:aws:s3:::${var.deployment_bucket_name}",
-      "arn:aws:s3:::${var.deployment_bucket_name}/*"
-    ]
-  }
-}
-
-resource "aws_iam_role_policy" "ec2_custom" {
-  name   = "${local.name_prefix}-ec2-custom"
-  role   = aws_iam_role.ec2.id
-  policy = data.aws_iam_policy_document.ec2_custom.json
-}
-
 resource "aws_iam_instance_profile" "ec2" {
   name = "${local.name_prefix}-ec2-profile"
   role = aws_iam_role.ec2.name
