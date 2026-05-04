@@ -30,12 +30,6 @@ variable "db_username" {
   sensitive   = true
 }
 
-variable "db_password" {
-  description = "Master password for the RDS instance"
-  type        = string
-  sensitive   = true
-}
-
 variable "instance_class" {
   description = "RDS instance class"
   type        = string

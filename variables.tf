@@ -20,12 +20,7 @@ variable "db_username" {
   description = "Master username for the RDS instance"
   type        = string
   sensitive   = true
-}
-
-variable "db_password" {
-  description = "Master password for the RDS instance"
-  type        = string
-  sensitive   = true
+  default     = "pinnacle_admin"
 }
 
 variable "domain_name" {
@@ -43,6 +38,7 @@ variable "subdomain" {
 variable "alert_email" {
   description = "Email address for CloudWatch alarm notifications"
   type        = string
+  default     = "jobs@cornelcloud.net"
 }
 
 variable "github_repo" {

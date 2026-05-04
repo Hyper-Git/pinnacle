@@ -70,9 +70,16 @@ jobs:
 
       - name: Upload artifact to S3
         run: |
+          # Upload versioned artifact
           aws s3 cp app-${{ github.sha }}.zip \
-            s3://pinnacle-deployments/releases/app-${{ github.sha }}.zip
-          echo "s3://pinnacle-deployments/releases/app-${{ github.sha }}.zip"
+            s3://pinnacle-deployments-cornelcloud/releases/app-${{ github.sha }}.zip
+          
+          # Update latest pointer for ASG Instance Refresh
+          aws s3 cp app-${{ github.sha }}.zip \
+            s3://pinnacle-deployments-cornelcloud/releases/app-latest.zip
+          
+          echo "s3://pinnacle-deployments-cornelcloud/releases/app-${{ github.sha }}.zip"
+          echo "s3://pinnacle-deployments-cornelcloud/releases/app-latest.zip"
 
       - name: Start ASG instance refresh
         id: refresh

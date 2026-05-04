@@ -38,6 +38,12 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 
 # ── RDS PostgreSQL 16 ─────────────────────────────────────────────────────────
 
+resource "random_password" "db_password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
 resource "aws_db_instance" "main" {
   identifier = "${local.name_prefix}-postgres"
 
@@ -51,7 +57,7 @@ resource "aws_db_instance" "main" {
 
   db_name  = var.db_name
   username = var.db_username
-  password = var.db_password
+  password = random_password.db_password.result
 
   multi_az               = true
   db_subnet_group_name   = aws_db_subnet_group.main.name
@@ -80,16 +86,16 @@ resource "aws_db_instance" "main" {
 # ── Secrets Manager ───────────────────────────────────────────────────────────
 
 resource "aws_secretsmanager_secret" "db" {
-  name                    = "${var.project}/prod/db-password"
+  name                    = "${var.project}/${var.environment}/db-password"
   description             = "Database credentials for ${local.name_prefix} PostgreSQL"
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0 # Set to 0 for easier re-runs during development
 }
 
 resource "aws_secretsmanager_secret_version" "db" {
   secret_id = aws_secretsmanager_secret.db.id
   secret_string = jsonencode({
     username = var.db_username
-    password = var.db_password
+    password = random_password.db_password.result
     host     = aws_db_instance.main.address
     port     = aws_db_instance.main.port
     dbname   = var.db_name

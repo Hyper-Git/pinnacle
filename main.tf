@@ -28,7 +28,6 @@ module "database" {
   rds_security_group_id = module.security.rds_security_group_id
   db_name               = "pinnacle_db"
   db_username           = var.db_username
-  db_password           = var.db_password
 }
 
 module "compute" {

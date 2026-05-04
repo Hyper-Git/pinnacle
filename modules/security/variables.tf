@@ -16,7 +16,7 @@ variable "vpc_id" {
 variable "app_port" {
   description = "Port the application listens on (ALB → EC2 traffic)"
   type        = number
-  default     = 80
+  default     = 8080
 }
 
 variable "deployment_bucket_name" {

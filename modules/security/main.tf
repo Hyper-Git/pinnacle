@@ -113,7 +113,7 @@ data "aws_iam_policy_document" "ec2_custom" {
     sid     = "SecretsManagerRead"
     actions = ["secretsmanager:GetSecretValue"]
     resources = [
-      "arn:aws:secretsmanager:*:*:secret:${var.project}/*"
+      "arn:aws:secretsmanager:*:*:secret:${var.project}/${var.environment}/db-password-*"
     ]
   }
 

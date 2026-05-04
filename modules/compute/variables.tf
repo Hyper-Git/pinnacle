@@ -61,7 +61,7 @@ variable "db_secret_arn" {
 variable "deployment_bucket_name" {
   description = "S3 bucket name for application deployment artifacts"
   type        = string
-  default     = "pinnacle-deployments"
+  default     = "pinnacle-deployments-cornelcloud"
 }
 
 variable "instance_type" {
@@ -73,7 +73,7 @@ variable "instance_type" {
 variable "app_port" {
   description = "Port the application and target group listen on"
   type        = number
-  default     = 80
+  default     = 8080
 }
 
 variable "health_check_path" {
