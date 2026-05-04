@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 # Prevent concurrent deployments — queue rather than cancel
 concurrency:
   group: deploy-production
@@ -32,16 +35,13 @@ jobs:
 
       - name: Verify all imports
         run: |
-          python - << 'EOF'
-          import flask
-          import gunicorn
-          import psycopg2
-          import dotenv
-          print(f"flask       {flask.__version__}")
-          print(f"psycopg2    {psycopg2.__version__}")
-          print(f"dotenv      {dotenv.__version__}")
-          print("All dependencies OK")
-          EOF
+          python -c "
+          import flask, gunicorn, psycopg2, dotenv
+          print('flask    ', flask.__version__)
+          print('psycopg2 ', psycopg2.__version__)
+          print('dotenv   ', dotenv.__version__)
+          print('All dependencies OK')
+          "
 
   # ── CD: package → S3 → instance refresh ───────────────────────────────────
   deploy:
