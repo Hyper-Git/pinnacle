@@ -17,7 +17,6 @@ module "security" {
   project     = var.project
   environment = var.environment
   vpc_id      = module.networking.vpc_id
-  github_repo = var.github_repo
 }
 
 module "database" {
@@ -51,6 +50,17 @@ module "compute" {
   fqdn            = module.dns.fqdn
 
   db_secret_arn = module.database.db_secret_arn
+}
+
+module "github_oidc" {
+  source = "./modules/github-oidc"
+
+  project     = var.project
+  environment = var.environment
+  github_repo = var.github_repo
+
+  deployment_bucket_name = module.compute.deployment_bucket_name
+  asg_name               = module.compute.asg_name
 }
 
 module "monitoring" {

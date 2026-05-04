@@ -19,13 +19,3 @@ variable "app_port" {
   default     = 80
 }
 
-variable "github_repo" {
-  description = "GitHub repository for OIDC trust policy (format: owner/repo)"
-  type        = string
-}
-
-variable "deployment_bucket_name" {
-  description = "S3 bucket name for application deployment artifacts"
-  type        = string
-  default     = "pinnacle-deployments"
-}

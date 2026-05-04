@@ -61,7 +61,7 @@ output "ec2_instance_profile_name" {
 
 output "github_actions_role_arn" {
   description = "IAM role ARN for GitHub Actions OIDC"
-  value       = module.security.github_actions_role_arn
+  value       = module.github_oidc.github_actions_role_arn
 }
 
 # ── Phase 3: Database ─────────────────────────────────────────────────────────
