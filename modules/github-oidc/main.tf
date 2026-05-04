@@ -45,11 +45,16 @@ data "aws_iam_policy_document" "assume_role" {
       values   = ["sts.amazonaws.com"]
     }
 
-    # Scoped to main branch only — forks and other branches cannot assume this role
+    # Accept main branch pushes and jobs running in the production environment.
+    # When a job sets `environment: production`, GitHub replaces the branch sub
+    # claim with `repo:OWNER/REPO:environment:production`.
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/main"]
+      values = [
+        "repo:${var.github_repo}:ref:refs/heads/main",
+        "repo:${var.github_repo}:environment:production",
+      ]
     }
   }
 }
