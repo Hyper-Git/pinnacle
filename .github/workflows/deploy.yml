@@ -1,0 +1,148 @@
+name: CI/CD — Pinnacle
+
+on:
+  push:
+    branches: [main]
+
+# Prevent concurrent deployments — queue rather than cancel
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+
+  # ── CI: verify dependencies install and import cleanly ─────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install flask gunicorn psycopg2-binary python-dotenv
+
+      - name: Verify all imports
+        run: |
+          python - << 'EOF'
+          import flask
+          import gunicorn
+          import psycopg2
+          import dotenv
+          print(f"flask       {flask.__version__}")
+          print(f"psycopg2    {psycopg2.__version__}")
+          print(f"dotenv      {dotenv.__version__}")
+          print("All dependencies OK")
+          EOF
+
+  # ── CD: package → S3 → instance refresh ───────────────────────────────────
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    environment: production
+
+    permissions:
+      id-token: write  # required for OIDC token exchange
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC — no static keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Create deployment artifact
+        run: |
+          zip -r app-${{ github.sha }}.zip . \
+            -x ".git/*"            \
+            -x ".git/**/*"         \
+            -x ".terraform/*"      \
+            -x ".terraform/**/*"   \
+            -x "*.tfvars"          \
+            -x "*.tfstate"         \
+            -x "*.tfstate.backup"  \
+            -x "*.tflock"          \
+            -x ".env"              \
+            -x ".env.*"
+          echo "Artifact: app-${{ github.sha }}.zip ($(du -sh app-${{ github.sha }}.zip | cut -f1))"
+
+      - name: Upload artifact to S3
+        run: |
+          aws s3 cp app-${{ github.sha }}.zip \
+            s3://pinnacle-deployments/releases/app-${{ github.sha }}.zip
+          echo "s3://pinnacle-deployments/releases/app-${{ github.sha }}.zip"
+
+      - name: Start ASG instance refresh
+        id: refresh
+        run: |
+          REFRESH_ID=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name pinnacle-prod-asg \
+            --preferences '{"MinHealthyPercentage":50,"InstanceWarmup":120}' \
+            --query 'InstanceRefreshId' \
+            --output text)
+
+          if [ -z "$REFRESH_ID" ] || [ "$REFRESH_ID" = "None" ]; then
+            echo "Failed to start instance refresh"
+            exit 1
+          fi
+
+          echo "id=$REFRESH_ID" >> "$GITHUB_OUTPUT"
+          echo "Instance refresh started: $REFRESH_ID"
+
+      - name: Poll until refresh completes (timeout 20 min)
+        run: |
+          REFRESH_ID="${{ steps.refresh.outputs.id }}"
+          MAX_ATTEMPTS=40   # 40 × 30 s = 20 minutes
+          ATTEMPT=0
+
+          echo "Polling refresh $REFRESH_ID every 30 s..."
+
+          while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
+            read -r STATUS PCT < <(
+              aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name pinnacle-prod-asg \
+                --instance-refresh-ids "$REFRESH_ID" \
+                --query 'InstanceRefreshes[0].[Status,PercentageComplete]' \
+                --output text
+            )
+
+            echo "[$(date -u '+%H:%M:%S')] Status: ${STATUS} | Progress: ${PCT}%"
+
+            case "$STATUS" in
+              Successful)
+                echo "Deployment complete — all instances replaced successfully."
+                exit 0
+                ;;
+              Failed)
+                echo "Instance refresh failed. Check the ASG activity history."
+                exit 1
+                ;;
+              Cancelled)
+                echo "Instance refresh was cancelled."
+                exit 1
+                ;;
+              RollbackSuccessful|RollbackFailed)
+                echo "Instance refresh rolled back with status: $STATUS"
+                exit 1
+                ;;
+            esac
+
+            ATTEMPT=$(( ATTEMPT + 1 ))
+            sleep 30
+          done
+
+          echo "Timed out after 20 minutes — instance refresh did not complete."
+          exit 1
