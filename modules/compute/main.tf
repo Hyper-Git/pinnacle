@@ -274,7 +274,7 @@ data "aws_iam_policy_document" "ec2_custom" {
 }
 
 resource "aws_iam_role_policy" "ec2_custom" {
-  name   = "${local.name_prefix}-ec2-custom"
+  name   = "${local.name_prefix}-ec2-permissions"
   role   = var.ec2_role_name
   policy = data.aws_iam_policy_document.ec2_custom.json
 }
