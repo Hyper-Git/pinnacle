@@ -1,5 +1,7 @@
 import os
 import datetime
+import json
+import boto3
 import psycopg2
 from flask import Flask, jsonify
 from dotenv import load_dotenv
@@ -13,17 +15,42 @@ else:
 
 app = Flask(__name__)
 
-INSTANCE_ID = os.environ.get('INSTANCE_ID', 'unknown')
-DB_HOST = os.environ.get('DB_HOST')
-DB_USER = os.environ.get('DB_USER')
-DB_PASS = os.environ.get('DB_PASS')
-DB_PORT = int(os.environ.get('DB_PORT', 5432))
-DB_NAME = os.environ.get('DB_NAME')
+# ── Configuration Handling ───────────────────────────────────────────────────
 
+INSTANCE_ID = os.environ.get('INSTANCE_ID', 'unknown')
+REGION = os.environ.get('AWS_REGION', 'eu-west-2')
+DB_SECRET_ARN = os.environ.get('DB_SECRET_ARN')
+
+# Initialize DB config with defaults from environment
+DB_CONFIG = {
+    'host': os.environ.get('DB_HOST'),
+    'user': os.environ.get('DB_USER'),
+    'pass': os.environ.get('DB_PASS'),
+    'port': int(os.environ.get('DB_PORT', 5432)),
+    'name': os.environ.get('DB_NAME')
+}
+
+# If a secret ARN is provided, fetch credentials directly into memory
+if DB_SECRET_ARN:
+    try:
+        client = boto3.client('secretsmanager', region_name=REGION)
+        response = client.get_secret_value(SecretId=DB_SECRET_ARN)
+        secrets = json.loads(response['SecretString'])
+        
+        DB_CONFIG.update({
+            'host': secrets['host'],
+            'user': secrets['username'],
+            'pass': secrets['password'],
+            'port': int(secrets['port']),
+            'name': secrets['dbname']
+        })
+        print(f"Successfully loaded secrets from {DB_SECRET_ARN}")
+    except Exception as e:
+        print(f"Warning: Failed to fetch secrets from AWS: {str(e)}")
 
 @app.route('/')
 def index():
-    return f'Pinnacle App - Instance {INSTANCE_ID} - Healthy'
+    return f'Pinnacle App - Instance {INSTANCE_ID} - Healthy (Secrets: {"Memory" if DB_SECRET_ARN else "Disk"})'
 
 
 @app.route('/health')
@@ -39,11 +66,11 @@ def health():
 def db_check():
     try:
         conn = psycopg2.connect(
-            host=DB_HOST,
-            port=DB_PORT,
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASS,
+            host=DB_CONFIG['host'],
+            port=DB_CONFIG['port'],
+            dbname=DB_CONFIG['name'],
+            user=DB_CONFIG['user'],
+            password=DB_CONFIG['pass'],
             connect_timeout=5
         )
         cur = conn.cursor()
@@ -52,8 +79,9 @@ def db_check():
         conn.close()
         return jsonify({
             'database': 'connected',
-            'host': DB_HOST,
-            'instance_id': INSTANCE_ID
+            'host': DB_CONFIG['host'],
+            'instance_id': INSTANCE_ID,
+            'secret_source': 'AWS Secrets Manager' if DB_SECRET_ARN else 'Local Environment'
         })
     except Exception as e:
         return jsonify({

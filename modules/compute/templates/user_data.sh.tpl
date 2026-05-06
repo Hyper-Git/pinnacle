@@ -10,38 +10,22 @@ dnf update -y
 dnf install -y python3-pip amazon-ssm-agent unzip
 
 systemctl enable --now amazon-ssm-agent
-pip3 install flask gunicorn psycopg2-binary python-dotenv
+pip3 install flask gunicorn psycopg2-binary python-dotenv boto3
 
-# ── 3. Secret Fetching (Securely) ──────────────────────────────────────────────
-# Fetch DB credentials from Secrets Manager to a temporary file
-aws secretsmanager get-secret-value \
-  --secret-id '${db_secret_arn}' \
-  --region '${region}' \
-  --query SecretString \
-  --output text > /etc/app/db-credentials.json
-
-# Parse JSON credentials into an env file
-python3 -c "
-import json
-with open('/etc/app/db-credentials.json') as f:
-    c = json.load(f)
-with open('/etc/app/.env', 'w') as f:
-    f.write('DB_HOST=' + c['host'] + '\n')
-    f.write('DB_USER=' + c['username'] + '\n')
-    f.write('DB_PASS=' + c['password'] + '\n')
-    f.write('DB_PORT=' + str(c['port']) + '\n')
-    f.write('DB_NAME=' + c['dbname'] + '\n')
-"
-
-# Shred the temporary JSON file
-shred -u /etc/app/db-credentials.json
-
-# Fetch instance ID via IMDSv2 and append to env file
+# ── 3. Configuration Setup ────────────────────────────────────────────────────
+# Fetch instance ID via IMDSv2
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
   -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
   http://169.254.169.254/latest/meta-data/instance-id)
-echo "INSTANCE_ID=$INSTANCE_ID" >> /etc/app/.env
+
+# Create environment file with non-sensitive identifiers only
+# The application will use DB_SECRET_ARN to fetch credentials into memory
+cat > /etc/app/.env << ENVEOF
+INSTANCE_ID=$INSTANCE_ID
+AWS_REGION=${region}
+DB_SECRET_ARN=${db_secret_arn}
+ENVEOF
 
 # Set strict permissions
 chown -R appuser:appuser /etc/app
