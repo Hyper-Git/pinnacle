@@ -5,27 +5,11 @@ locals {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# Fetch GitHub's TLS certificate to derive the OIDC thumbprint automatically
-data "tls_certificate" "github_actions" {
+# ── GitHub OIDC Provider (shared, not managed here) ───────────────────────────
+# This provider is account-scoped and owned by another Terraform project.
+# We reference it as a data source so terraform destroy never touches it.
+data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
-}
-
-# ── GitHub OIDC Provider ──────────────────────────────────────────────────────
-# Account-scoped (one per URL). If it already exists in the account, import it:
-# terraform import 'module.github_oidc.aws_iam_openid_connect_provider.github' \
-#   'arn:aws:iam::<account_id>:oidc-provider/token.actions.githubusercontent.com'
-
-resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.github_actions.certificates[0].sha1_fingerprint]
-
-  tags = {
-    Name        = "github-actions-oidc"
-    Project     = var.project
-    Environment = var.environment
-    ManagedBy   = "terraform"
-  }
 }
 
 # ── IAM Role ──────────────────────────────────────────────────────────────────
@@ -36,7 +20,7 @@ data "aws_iam_policy_document" "assume_role" {
 
     principals {
       type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
+      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
     }
 
     condition {
