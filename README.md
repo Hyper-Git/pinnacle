@@ -276,16 +276,16 @@ This section provides visual evidence of each infrastructure phase, demonstratin
 
 ### Phase 4: Compute & Load Balancing
 
-![ALB Listeners](screenshots/phase4-compute/alb-listeners.png)
+![ALB Listeners](screenshots/phase4-compute/alb-listners.png)
 *ALB configured with two listeners: HTTP :80 permanently redirects to HTTPS, and HTTPS :443 forwards to the target group using the ACM certificate.*
 
-![Target Group Healthy](screenshots/phase4-compute/target-group-healthy.png)
+![Target Group Healthy](screenshots/phase4-compute/target-groups-healthy.png)
 *All EC2 instances registered in the target group showing "healthy" status, confirming the `/health` endpoint is responding and the ASG is operational.*
 
 ![ASG Overview](screenshots/phase4-compute/asg-overview.png)
 *Auto Scaling Group showing min:2 / desired:2 / max:4 configuration across all three private subnets, proving high-availability compute placement.*
 
-![Browser HTTPS](screenshots/phase4-compute/browser-https.png)
+![Browser HTTPS](screenshots/phase4-compute/browser-hyyps.png)
 *Live application served over HTTPS at `pinnacle.cornelcloud.net` with a valid ACM certificate, proving end-to-end TLS termination on the ALB.*
 
 ---
@@ -301,7 +301,7 @@ This section provides visual evidence of each infrastructure phase, demonstratin
 ![SNS Email Alert](screenshots/phase5-monitoring/sns-email-alert.png)
 *SNS email notification received in inbox when the CPU alarm triggered, proving the end-to-end alerting pipeline works.*
 
-![CloudWatch Dashboard](screenshots/phase5-monitoring/cloudwatch-dashboard.png)
+![CloudWatch Dashboard](screenshots/phase5-monitoring/claudwatch-dashboard.png)
 *CloudWatch dashboard showing live ALB request count, EC2 CPU utilisation, RDS connections, and freeable memory — captured during a load test.*
 
 ---
