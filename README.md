@@ -386,5 +386,7 @@ backend "s3" {
 
 Built by **Cornel Bacanu** as part of the Pinnacle Cloud Portfolio.
 
-- **Live URL:** `pinnacle.cornelcloud.net`
+- Previously live at pinnacle.cornelcloud.net — torn down after 
+validation to control costs. Re-deployable in ~15 minutes via 
+terraform apply.
 - **Portfolio:** `cornelcloud.net`
