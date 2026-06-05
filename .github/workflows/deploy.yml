@@ -1,8 +1,9 @@
 name: CI/CD — Pinnacle
-
+# Infrastructure currently destroyed (cost control).
+# Re-deployable via terraform apply in ~15 minutes.
+# Workflow disabled until next deployment cycle.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch: # manual trigger only 
 
 
 # Prevent concurrent deployments — queue rather than cancel
